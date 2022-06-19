@@ -1,1 +1,12 @@
-,venv/
+.env
+.venv
+*.log
+*.pot
+*.pyc
+*.py[cod]
+*$py.class
+__pycache__
+local_settings.py
+db.sqlite3
+media
+.idea/
