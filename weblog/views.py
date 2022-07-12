@@ -1,4 +1,4 @@
-import re
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.core.paginator import Paginator
@@ -19,12 +19,14 @@ class MainView(View):
             'page_obj': page_obj
         })
 
+
 class PostDetailView(View):
     def get(self, reauest, slug):
         post = get_object_or_404(Post, url=slug)
         return render(reauest, 'weblog/post_detail.html', context={
             'post': post
         })
+
 
 class SignUpView(View):
     def get(self, request):
@@ -95,4 +97,22 @@ class SuccessView(View):
     def get(self, request):
         return render(request, 'weblog/success.html', context={
             'title': 'Спасибо',
+        })
+
+
+class SearchResultView(View):
+    def get(self, request):
+        query = request.GET.get('q')
+        results = ''
+        if query:
+            results = Post.objects.filter(
+                Q(h1__icontains=query) | Q(content__icontains=query)
+            )
+        paginator = Paginator(results, 6)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'weblog/search.html', context={
+            'title': 'Поиск',
+            'results': page_obj,
+            'count': paginator.count,
         })
