@@ -1,4 +1,3 @@
-from urllib import request
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.views import View
@@ -39,9 +38,10 @@ class PostDetailView(View):
         comment_form = CommentForm(request.POST)
         if comment_form.is_valid():
             text = request.POST['text']
-            username = request.POST.user
+            username = self.request.user
             post = get_object_or_404(Post, url=slug)
-            comment = Comment.objects.create(request.META.get('HTTP_REFERER', '/'))
+            comment = Comment.objects.create(post=post, username=username, text=text)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         return render(request, 'weblog/post_detail.html', context={
             'comment_form': comment_form
         })
