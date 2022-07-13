@@ -7,6 +7,7 @@ from .forms import SignUpForm, SignInForm, FeedBackForm
 from django.contrib.auth import login, authenticate
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.mail import send_mail, BadHeaderError
+from taggit.models import Tag
 
 
 class MainView(View):
@@ -23,8 +24,12 @@ class MainView(View):
 class PostDetailView(View):
     def get(self, reauest, slug):
         post = get_object_or_404(Post, url=slug)
+        common_tags = Post.tag.most_common()
+        last_posts = Post.objects.all().order_by('-id')[:3]
         return render(reauest, 'weblog/post_detail.html', context={
-            'post': post
+            'post': post,
+            'common_tags':common_tags,
+            'last_posts': last_posts,
         })
 
 
@@ -115,4 +120,16 @@ class SearchResultView(View):
             'title': 'Поиск',
             'results': page_obj,
             'count': paginator.count,
+        })
+
+
+class TagView(View):
+    def get(self, request, slug):
+        tag = get_object_or_404(Tag, slug=slug)
+        posts = Post.objects.filter(tag=tag)
+        common_tags = Post.tag.most_common()
+        return render(request, 'weblog/tag.html', context={
+            'title': f'#ТЕГ {tag}',
+            'posts': posts,
+            'common_tags': common_tags,
         })
